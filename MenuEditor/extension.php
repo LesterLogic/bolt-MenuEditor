@@ -211,6 +211,29 @@ class Extension extends \Bolt\BaseExtension
             } catch (MenuEditorException $e) {
                 return $this->app->json(array('writeLock' => $e->getMessage(), 'status' => $e->getCode()));
             }
+            
+            /**
+             * search contenttype(s)
+             */
+            try {
+            	if ($this->app['request']->get('action') == 'search-contenttypes') {
+            		$ct = $this->app['request']->get('ct');
+            		$q = $this->app['request']->get('q');
+            		$retVal = Array();
+            		if (empty($ct)) {
+            		    $contenttypes = $this->app['config']->get('contenttypes');
+						foreach ($contenttypes as $ck => $contenttype) {
+							$retVal[] = $this->app['storage']->getContent($contenttype['name'], array('title'=> "%$q%", 'slug'=>"%$q%", 'limit'=>100, 'order'=>'title'));
+						}
+            		} else {
+            			$retVal[] = $this->app['storage']->getContent($ct, array('title'=> "%$q%", 'limit'=>100, 'order'=>'title'));
+            		}
+            		
+            		return $this->app->json(array('records' => $retVal));
+            	}
+            } catch (Exception $e) {
+            
+            }
         }
 
         // add eMenuEditor template namespace to twig
